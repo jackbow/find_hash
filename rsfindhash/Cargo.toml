@@ -1,0 +1,11 @@
+[package]
+name = "rsfindhash"
+version = "0.1.0"
+authors = ["Jack Bowman <jack@umich.edu>"]
+edition = "2018"
+
+[dependencies]
+md5 = "0.6.1"
+rand = "0.6.5"
+termion = "1.5.1"
+num_cpus = "1.10.0"
