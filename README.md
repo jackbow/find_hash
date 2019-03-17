@@ -1,3 +1,5 @@
+![output](https://i.imgur.com/t9YtwnT.gif)
+
 | Language | Time to check 10mil hashes  | Speedups                 |
 | :-----   | :-------------------------- | :----------------------- |
 | Python   | 3882.30sec (~1hr)           | NA                       |
