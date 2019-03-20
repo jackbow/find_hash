@@ -1,4 +1,4 @@
-from pymd5 import md5
+from hashlib import md5
 
 def main():
 
@@ -6,9 +6,8 @@ def main():
     vals = ["277c7c273", "276f72273", "274f52273", "274f72273", "276f52273"]
 
     # set to this number so it doesn't need to run for hours (should return in ~1 minute)
-    pw_int = 100000000000000000000000000000539000000
+    pw_int = 100000000000000000000000000000538511092
     # should output 100000000000000000000000000000538611092
-
 
     found = False
     while not found:
