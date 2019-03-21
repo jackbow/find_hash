@@ -78,7 +78,7 @@ fn printer(rx: mpsc::Receiver<Password>) {
 fn search(tx: mpsc::Sender<Password>) {
     let mut i: u32 = 0;
     // used to benchmark
-    let nsearchers = num_cpus::get()/CPU_FRAC_DENOM;
+    // let nsearchers = num_cpus::get()/CPU_FRAC_DENOM;
     loop {
         i += 1;
         let pw = gen_string(PW_LEN);
@@ -91,7 +91,7 @@ fn search(tx: mpsc::Sender<Password>) {
                 }).unwrap();
         }
         // used to benchmark
-        if i == 10000000/(nsearchers as u32) { process::exit(0); }
+        // if i == 10000000/(nsearchers as u32) { process::exit(0); }
     }
 }
 
