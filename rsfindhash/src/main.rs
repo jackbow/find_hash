@@ -17,8 +17,8 @@ const CHARSET: &[u8] =  b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                          abcdefghijklmnopqrstuvwxyz\
                          0123456789)(*&^%$#@!~{}[]|\
                          \\\'\";:_-+=<>,./?`"; // character set to use to generate passwords
-const CPU_FRAC_DENOM: usize = 2; // denominator of fraction of cpu cores to run
-const PRINT_FREQ: u32 = 230000; // 1 in x pws are printed as output
+const CPU_FRAC_DENOM: usize = 1; // denominator of fraction of cpu cores to run
+const PRINT_FREQ: u32 = 230000; //` 1 in x pws are printed as output
 
 fn check_hash(hash: md5::Digest) -> bool {
     for i in 0..(hash.0.len()-5) {
@@ -56,7 +56,8 @@ struct Password {
 
 fn printer(rx: mpsc::Receiver<Password>) {
     let now = Instant::now();
-    let nsearchers = (num_cpus::get_physical()/CPU_FRAC_DENOM) as u32;
+    let nsearchers = (num_cpus::get()/CPU_FRAC_DENOM) as u32;
+    print!("{}", termion::cursor::Hide);
     for msg in rx {
         println!("{}\n{} million hashes in {}sec",
             msg.string,
@@ -67,16 +68,17 @@ fn printer(rx: mpsc::Receiver<Password>) {
             process::exit(0);
         }
         else { // reset cursor to overwrite output if not valid pw
-            print!("{}{}{}",
+            print!("{}{}",
             termion::cursor::Up(2),
-            termion::cursor::Left(4),
-            termion::cursor::Hide);
+            termion::cursor::Left(4));
         }
     }
 }
 
 fn search(tx: mpsc::Sender<Password>) {
     let mut i: u32 = 0;
+    // used to benchmark
+    let nsearchers = num_cpus::get()/CPU_FRAC_DENOM;
     loop {
         i += 1;
         let pw = gen_string(PW_LEN);
@@ -89,7 +91,7 @@ fn search(tx: mpsc::Sender<Password>) {
                 }).unwrap();
         }
         // used to benchmark
-        // if i == 10000000/nsearchers { process::exit(0); }
+        if i == 10000000/(nsearchers as u32) { process::exit(0); }
     }
 }
 
@@ -104,7 +106,7 @@ fn main() {
 
     // spawn searchers
     let mut searcher_thrs = vec![];
-    for _ in 0..(num_cpus::get_physical()/CPU_FRAC_DENOM) {
+    for _ in 0..(num_cpus::get()/CPU_FRAC_DENOM) {
         let txc = tx.clone();
         searcher_thrs.push(thread::spawn(|| search(txc)));
     }

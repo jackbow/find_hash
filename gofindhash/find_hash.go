@@ -13,14 +13,29 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?,.!@#$%^&*()+=-_[]{}|;:<>~")
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?,.!@#$%^&*()+=-_[]{}|;:<>~"
 
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+// https://medium.com/@kpbird/golang-generate-fixed-size-random-string-dd6dbd5e63c0
+func randASCIIBytes(n int) []byte {
+	output := make([]byte, n)
+	// We will take n bytes, one byte for each character of output.
+	randomness := make([]byte, n)
+	// read all random
+	_, err := rand.Read(randomness)
+	if err != nil {
+		panic(err)
 	}
-	return string(b)
+	l := len(letterBytes)
+	// fill output
+	for pos := range output {
+		// get random item
+		random := uint8(randomness[pos])
+		// random % 64
+		randomPos := random % uint8(l)
+		// put into output
+		output[pos] = letterBytes[randomPos]
+	}
+	return output
 }
 
 var st_end_val = []byte("\x27")
@@ -30,39 +45,29 @@ func checkHash(x []byte) bool {
 	hash := md5.Sum(x)
 	for i := 0; i <= len(hash)-5; i++ {
 		// check first quote
-		if hash[i] != st_end_val[0] {
+		if hash[i] != st_end_val[0] ||
+			hash[i+3] != st_end_val[0] ||
+			48 <= hash[i+4] || hash[i+4] >= 58 {
 			continue
 		}
-		valid := false
 		switch hash[i+1] {
 		// case ||
 		case mid_vals[0][0]:
 			if hash[i+2] == mid_vals[0][1] {
-				valid = true
+				return true
 			}
 		// case or, oR
 		case []byte("\x6f")[0]:
 			if hash[i+2] == []byte("\x72")[0] ||
 				hash[i+2] == []byte("\x52")[0] {
-				valid = true
+				return true
 			}
 		// case Or, OR
 		case []byte("\x4f")[0]:
 			if hash[i+2] == []byte("\x72")[0] ||
 				hash[i+2] == []byte("\x52")[0] {
-				valid = true
+				return true
 			}
-		}
-		if !valid {
-			continue
-		}
-		// check second quote
-		if hash[i+3] != st_end_val[0] {
-			continue
-		}
-		// check for num != 0
-		if 48 < hash[i+4] && hash[i+4] < 58 {
-			return true
 		}
 	}
 	return false
@@ -73,8 +78,8 @@ func checkHash(x []byte) bool {
 // pw := []byte("QS+02")
 
 func genHashes() {
-	for i := 0; true; i++ {
-		pw := []byte(randSeq(5)) // 5 billion possible strings w 89 chars
+	for i := 0; i < 10000000/2; i++ {
+		pw := randASCIIBytes(5) // 5 billion possible strings w 89 chars
 		if checkHash(pw) {
 			fmt.Println(string(pw[:]))
 			fmt.Printf("checked %v hashes\n", i*2)
