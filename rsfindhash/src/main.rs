@@ -58,10 +58,15 @@ fn printer(rx: mpsc::Receiver<Password>) {
     let now = Instant::now();
     let nsearchers = (num_cpus::get()/CPU_FRAC_DENOM) as u32;
     print!("{}", termion::cursor::Hide);
+    let mut max_checked: u32 = 0;
     for msg in rx {
+        let n_checked: u32 = msg.n_checked * nsearchers / 1000000;
+        if max_checked < n_checked {
+            max_checked = n_checked;
+        }
         println!("{}\n{} million hashes in {}sec",
             msg.string,
-            msg.n_checked * nsearchers / 1000000,
+            max_checked,
             now.elapsed().as_secs());
         if msg.valid {
             println!("{}", termion::cursor::Show); // give user back their cursor
