@@ -1,3 +1,4 @@
+use ctrlc;
 use termion;
 use num_cpus;
 use md5::compute;
@@ -64,18 +65,24 @@ fn printer(rx: mpsc::Receiver<Password>) {
         if max_checked < n_checked {
             max_checked = n_checked;
         }
-        println!("{}\n{} million hashes in {}sec",
+        println!("{}\n{} million hashes in {}m:{}s",
             msg.string,
             max_checked,
-            now.elapsed().as_secs());
+            now.elapsed().as_secs() / 60u64,
+            now.elapsed().as_secs() % 60
+        );
         if msg.valid {
-            println!("{}", termion::cursor::Show); // give user back their cursor
+            println!("{}{}",
+                termion::cursor::Up(1), // avoid extra new line
+                termion::cursor::Show   // give user back their cursor
+            ); 
             process::exit(0);
         }
         else { // reset cursor to overwrite output if not valid pw
             print!("{}{}",
-            termion::cursor::Up(2),
-            termion::cursor::Left(4));
+                termion::cursor::Up(2),
+                termion::cursor::Left(4)
+            );
         }
     }
 }
@@ -104,6 +111,16 @@ fn main() {
     // quick test
     assert!(check_hash(compute("QS+02")));
     assert!(!check_hash(compute("invalid")));
+
+    // set ctrl-c behavior
+    ctrlc::set_handler(move || {
+        // remove output & give user back their cursor
+        print!("{}{}",
+            termion::cursor::Up(1),
+            termion::cursor::Show
+        );
+        process::exit(1);
+    }).expect("Error setting Ctrl-C handler");
 
     // spawn printer
     let (tx, rx) = mpsc::channel();
