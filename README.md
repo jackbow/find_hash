@@ -1,10 +1,10 @@
 ![output](https://i.imgur.com/t9YtwnT.gif)
 
-| Language | Time to check 10mil hashes  | Speedups                 |
+| Language | Time to check 10mil hashes  | Relative Speed           |
 | :-----   | :-------------------------- | :----------------------- |
 | Python   | 3882.30sec (~1hr)           | NA                       |
 | Go       | 2.296sec                    | 1,691x Python            |
-| Rust     | 1.151sec                    | 2x Go; 3,773 Python      |
+| Rust     | 1.151sec                    | 2x Go; 3,773x Python     |
 
 Reimplemented twice because I was curious about go, rust, and language speed differences. This was my first time trying go, rust, and multithreaded programming outside my OS class. Each reimplementation improves upon the last (better code, multithreading, live output, etc).
 
